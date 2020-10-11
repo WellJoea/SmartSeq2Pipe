@@ -1,0 +1,19 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p $McSplicout
+echo "`date +%Y%m%d-%H:%M:%S`: McSplicer"
+
+#$EXONREFINE $STAR_gtf -p $McSplicpre
+
+#INBAM=$2
+#$SIGCOUNT $INBAM ${McSplicpre}.gtf  $McSplicpre
+
+$PYTHON2 $MCSPLICER \
+		--gtf ${McSplicpre}.gtf \
+		--count_file ${McSplicpre}.cnt \
+		--out_dir $McSplicout \
+        --prefix $TID \
+		--bootstraps 0 \
+		--read_len 150

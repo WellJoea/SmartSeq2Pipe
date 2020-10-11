@@ -1,0 +1,8 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+#mkdir -p $CUTADAPTout
+echo "`date +%Y%m%d-%H:%M:%S`: suppa2"
+
+$PYTHON3 $SUPPA2 generateEvents \

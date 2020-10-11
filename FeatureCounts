@@ -1,0 +1,23 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p $FTcountsout
+echo "`date +%Y%m%d-%H:%M:%S`: FeatureCounts"
+INBAM=$2
+
+$FEATURECOUNTS \
+    -a $STAR_gtf \
+    -F GTF \
+    -T 10 \
+    -p -B \
+    --donotsort \
+    --ignoreDup \
+    -J \
+    -G $STAR_ref \
+    -t exon \
+    -g gene_id \
+    -o ${FTcountspre}.fCounts.txt \
+    $INBAM \
+    2> ${FTcountspre}.fCounts.log
+

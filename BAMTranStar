@@ -1,0 +1,42 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+echo "`date +%Y%m%d-%H:%M:%S`: STAR BWA merge"
+
+BAMTranM=$STARout/${TID}.Aligned.toTranscriptome.merge.bam
+BAMTranMS=$STARout/${TID}.Aligned.toTranscriptome.merge.sort.bam
+BAMCoordM=$STARout/${TID}.Aligned.sortedByCoord.merge.bam
+BAMCoordMS=$STARout/${TID}.Aligned.sortedByCoord.merge.sort.bam
+
+if [ ${#LIDs[@]} -le 1 ];then
+    ln -sfr ${BAMTran}  ${BAMTranM}
+    ln -sfr ${BAMCoord} ${BAMCoordM}
+else
+    $SAMTOOLS merge -@ 20 -f -n ${BAMTranM}  ${BAMTran[@]}
+    $SAMTOOLS merge -@ 20 -f  ${BAMCoordM} ${BAMCoord[@]}
+    #$SAMBAMBA merge -t 10 -l 1 ${BAMCoordM} ${BAMCoord[@]}
+fi
+
+$SAMBAMBA sort -t 20 -o ${BAMTranMS} ${BAMTranM}
+$JAVA_JRE -jar $PICARD MarkDuplicates  \
+    I=${BAMTranMS} \
+    O=${BAMTranSM} \
+    REMOVE_DUPLICATES=false \
+    REMOVE_SEQUENCING_DUPLICATES=false \
+    M=${BAMTranSM}.txt
+$SAM2RSEM -p 20 ${BAMTranSM} ${BAMTranSMN/%.bam/}
+#$SAMBAMBA sort -t 20 -n -o ${BAMTranSMN} ${BAMTranSM}
+#$SAMBAMBA markdup -t 20 ${BAMTranMS}  ${BAMTranSM}
+
+$SAMBAMBA sort -t 20 -o ${BAMCoordMS} ${BAMCoordM}
+$JAVA_JRE -jar $PICARD MarkDuplicates  \
+    I=${BAMCoordMS} \
+    O=${BAMCoordSM} \
+    REMOVE_DUPLICATES=false \
+    REMOVE_SEQUENCING_DUPLICATES=false \
+    M=${BAMCoordSM}.txt
+$SAMBAMBA index -t 20 ${BAMCoordSM}
+$SAMBAMBA sort -t 20 -n -o ${BAMCoordSMN} ${BAMCoordSM}
+
+rm -f ${BAMTranM} ${BAMTranMS} ${BAMTranMS}.bai ${BAMCoordM}  ${BAMCoordMS} ${BAMCoordMS}.bai

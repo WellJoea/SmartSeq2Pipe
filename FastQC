@@ -1,0 +1,11 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p $FASTQCout
+echo "`date +%Y%m%d-%H:%M:%S`: fastqc"
+$FASTQC \
+    -o $FASTQCout \
+    -t 10 \
+    --java $JAVA_JRE \
+    ${RawFQpre}_r1.fq.gz  ${RawFQpre}_r2.fq.gz ${CUTADAPTpre}_trimmed_1.fq.gz ${CUTADAPTpre}_trimmed_2.fq.gz

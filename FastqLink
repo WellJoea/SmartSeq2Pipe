@@ -1,0 +1,7 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p $RawFQout
+ln -sf $R1 ${RawFQpre}_r1.fq.gz
+ln -sf $R2 ${RawFQpre}_r2.fq.gz

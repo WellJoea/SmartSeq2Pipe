@@ -1,0 +1,37 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p $HISAT2out
+echo "`date +%Y%m%d-%H:%M:%S`: HISAT2"
+
+HISATfq1=$2
+HISATfq2=$3
+$HISAT2 \
+    -p 20 \
+    -x $HISAT2_idx \
+    -1 ${HISATfq1} \
+    -2 ${HISATfq2} \
+    --known-splicesite-infile $HISAT2_SS \
+    --dta-cufflinks \
+    --dta \
+    --new-summary \
+    --rg-id $SID \
+    --rg SM:$SID \
+    --rg LB:$SID \
+    --rg PL:ILLUMINA \
+    --rg PU:flowcell-barcode.lane \
+    --un-gz ${HISAT2pre}.un.gz \
+    --al-gz ${HISAT2pre}.al.gz \
+    --un-conc-gz ${HISAT2pre}.un-conc.gz \
+    --al-conc-gz ${HISAT2pre}.al-conc.gz \
+    --novel-splicesite-outfile ${HISAT2pre}.novel.splicesite.txt \
+    --summary-file  ${HISAT2pre}.new_summary.txt \
+    | ${SAMTOOLS} view --threads 10 -Sb - \
+    > ${HISAT2pre}.hisat2.bam
+
+    #| samtools view -bS -F 4 -F 8 -F 256 - > ${prefix}.bam
+    # --all \
+    # --novel-splicesite-infile
+    # --rna-strandness
+

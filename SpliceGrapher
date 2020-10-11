@@ -1,0 +1,90 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p $SpliceGout
+echo "`date +%Y%m%d-%H:%M:%S`: splicegrapher"
+
+export SG_FASTA_REF=$STAR_ref
+export SG_GENE_MODEL=$STAR_gtf
+
+
+<<COMMNET
+$PYTHON2 $IN/build_classifiers.py \
+    -d gt,gc,at \
+    -a ag,ac \
+    -f $STAR_ref \
+    -m $STAR_gtf \
+    -l ${SpliceGout}/create_classifiers.log
+
+$PYTHON2 $IN/generate_roc.py gt_don.cfg -o gt_roc.pdf
+COMMNET
+
+IN=/share/home/share/software/SpliceGrapher-0.2.7/scripts
+PYTHON2=/share/home/share/software/Python-2.7.16/bin/python2
+STAR_gtf=/share/home/share/Repository/GenomeDB/Reference/Homo_Sapiens/ENSEMBL/Homo_sapiens.GRCh38.100.gtf
+STAR_ref=/share/home/share/Repository/GenomeDB/Reference/Homo_Sapiens/ENSEMBL/Homo_sapiens.GRCh38.dna.primary_assembly.fa
+
+INBAM=/data/zhouwei/02production/20200914_1800/U2OS-b3-R11_L1_Q811605/SS2/STAR/U2OS-b3-R11_L1_Q811605__D1.Aligned.sortedByCoord.sort.bam
+SGclassifer=/share/home/share/Repository/SpliceGrapherDB1/classifiers.zip
+samtools view -h $INBAM >aa.sam
+$PYTHON2 $IN/sam_filter.py \
+    aa.sam \
+    $SGclassifer \
+    -o filter.sam \
+    -f $STAR_ref \
+    -m $STAR_gtf \
+    -r classifer.score.txt \
+    -v
+
+
+#sam_to_depths.py filtered.sam -o filtered.depths
+#predict_graphs.py filtered.depths -m a_thaliana_reduced.gtf -v -d depths_predicted
+
+$PYTHON2 $IN/predict_graphs.py \
+    filter.sam \
+    -m $STAR_gtf \
+    -d aa.gff \
+    -v
+
+
+$PYTHON2 $IN/predict_splicegraph.py \
+    AT2G04700 -d filtered.sam -o AT2G04700.gff
+
+INGTF=/data/zhouwei/02production/20200914_1800/U2OS-b3-R11_L1_Q811605/SS2/SpliceGrapher/aa.gff/1/ENSG00000287516.gff
+$PYTHON2 $IN/view_splicegraphs.py \
+    -a $INGTF \
+    -o ff \
+    -L -v 
+#view_splicegraphs.py AT2G04700.gff -L
+#plotter.py AT2G04700_plot.cfg
+#$PYTHON2 $IN/view_splicegraphs.py \
+    aa.gff/1/*gff \
+    -H 30 \
+    -W 40 \
+    -F 8 \
+    -x \
+    -v \
+    -o aa.pdf 
+
+IN=/share/home/share/software/Python-2.7.16/bin/
+PYTHON2=/share/home/share/software/Python-2.7.16/bin/python2
+$PYTHON2 $IN/realignment_pipeline.py \
+    ./aa.gff/ \
+    -1 /data/zhouwei/02production/20200914_1800/U2OS-b3-R11_L1_Q811605/SS2/CutAdapt/U2OS-b3-R11_L1_Q811605__D1__L1_trimmed_1.fq.gz \
+    -2 /data/zhouwei/02production/20200914_1800/U2OS-b3-R11_L1_Q811605/SS2/CutAdapt/U2OS-b3-R11_L1_Q811605__D1__L1_trimmed_2.fq.gz \
+    -f $STAR_ref \
+    -m $STAR_gtf \
+    -d Realignment
+
+
+mkdir ../5.Transcript_Prediction
+$PYTHON2 $IN/psginfer_pipeline.py \
+
+../4.realignment_pipeline \
+../reads.1.fatsq ../reads.2.fastq \
+    -d Psginfer \
+    -l psginfer.log
+
+#isolasso_pipeline.py ../4.realignment_pipeline ../2.filter_alignments/filtered.sam -t 1.00 -d isolasso_PSG -v
+#isolasso_pipeline.py ../4.realignment_pipeline ../2.filter_alignments/filtered.sam -t 1.00 -Cd isolasso_CEM -v

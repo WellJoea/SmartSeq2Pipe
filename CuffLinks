@@ -1,0 +1,25 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p $CUFFLinkspre
+echo "`date +%Y%m%d-%H:%M:%S`: cufflinks"
+
+INBAM=$2
+$CUFFLINKS \
+    -o $CUFFLinkspre \
+    -p 20 \
+    -G $STAR_gtf \
+    -b $STAR_ref \
+    --library-type  fr-unstranded \
+    -L $TID \
+    $INBAM
+#-g
+#--library-norm-method classic-fpkm
+
+$CUFFCOMPARE \
+    -r $STAR_gtf \
+    -p $TID \
+    -o $CUFFLinkspre \
+    ${CUFFLinkspre}/transcripts.gtf
+

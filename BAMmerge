@@ -1,0 +1,33 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+echo "`date +%Y%m%d-%H:%M:%S`: BWA merge"
+
+if [ ${#LIDs[@]} -le 1 ];then
+    ln -sfr ${BAMTran}  ${BAMTranSN}
+    ln -sfr ${BAMCoord} ${BAMCoordS}
+    $SAMBAMBA index -t 10 $BAMCoordS
+else
+    $SAMBAMBA merge -t 10 -l 1 ${BAMTranSN}  ${BAMTran[@]}
+    $SAMBAMBA merge -t 10 -l 1 ${BAMCoord[@]} | $SAMBAMBA sort -t 10 -o ${BAMCoordS}
+fi
+$SAMBAMBA sort -t 10 -o ${BAMTranS}  ${BAMTranSN}
+$SAMBAMBA sort -t 10 -n -o ${BAMCoordSN} ${BAMCoordS}
+
+
+
+<<COMMENT
+if [ ${#LIDs[@]} -le 1 ];then
+    $SAMBAMBA sort -t 10 -n -o ${BAMmergSN} $BAMreplane
+else
+    $SAMBAMBA merge \
+    -t 10 \
+    -l 1 \
+    ${BAMreplane[@]} | \
+    $SAMBAMBA sort -t 10 -n -o ${BAMmergSN}
+fi
+
+#$SAMBAMBA index -t 10 $BAMmergSN
+$SAMBAMBA sort  -t 10 -o ${BAMmergS} ${BAMmergSN}
+COMMENT

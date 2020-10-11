@@ -1,0 +1,18 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p $ASGALpre
+echo "`date +%Y%m%d-%H:%M:%S`: asgal"
+
+zcat ${FQEachRep[@]}  > ${ASGALpre}.fq
+gzip -1 -f ${ASGALpre}.fq
+$PYTHON3 $ASGAL \
+    --multi \
+    -g $STAR_ref \
+    -a $STAR_gtf \
+    -t $STAR_cdna \
+    -s ${ASGALpre}.fq.gz \
+    -o ${ASGALpre} \
+    --threads 20 \
+    --allevents

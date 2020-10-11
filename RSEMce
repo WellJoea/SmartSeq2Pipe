@@ -1,0 +1,22 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p $RSEMceout
+echo "`date +%Y%m%d-%H:%M:%S`: RSEM"
+
+StarAtoTbam=$2
+$RSEMce \
+   --paired-end \
+   -p 30 \
+   --alignments \
+   --append-names \
+   --single-cell-prior \
+   -q \
+   --estimate-rspd \
+   --num-rspd-bins 20 \
+   --no-bam-output \
+   --bam \
+   $StarAtoTbam \
+   $RSEM_idx \
+   ${RSEMcepre}.rsemce

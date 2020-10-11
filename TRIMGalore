@@ -1,0 +1,17 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p $TRIMGALout
+echo "`date +%Y%m%d-%H:%M:%S`: trim_galore trim fastq"
+
+$TRIMGALORE \
+    --paired \
+    --gzip \
+    --path_to_cutadapt $CUTADAPT \
+    --path_to_fastqc $FASTQC \
+    --fastqc_args "--java $JAVA_JRE" \
+    -j 4 \
+    --basename $AID \
+    --output_dir $TRIMGALout \
+    ${RawFQpre}_r1.fq.gz  ${RawFQpre}_r2.fq.gz

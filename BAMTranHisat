@@ -1,0 +1,19 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+echo "`date +%Y%m%d-%H:%M:%S`: HISAT BWA merge"
+
+BAMHisM=$HISAT2out/${TID}.hisat2.merge.bam
+BAMHisS=$HISAT2out/${TID}.hisat2.sort.bam
+
+if [ ${#LIDs[@]} -le 1 ];then
+    ln -sfr ${BAMHis} $BAMHisM
+else
+    #$SAMBAMBA merge -t 10 -l 1 ${BAMHisM}  ${BAMHis[@]}
+    $SAMTOOLS merge -@ 20 -n -f ${BAMHisM}  ${BAMHis[@]}
+fi
+$SAMBAMBA sort -t 10 -o ${BAMHisS} ${BAMHisM}
+$SAMBAMBA markdup -t 10 ${BAMHisS} ${BAMHisSM}
+$SAMBAMBA sort -t 10 -n -o ${BAMHisSMN} ${BAMHisSM}
+rm -f $BAMHisM $BAMHisS ${BAMHisS}.bai

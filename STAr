@@ -1,0 +1,40 @@
+. $1
+. $(dirname $(realpath $0))/env.Configure
+. $(dirname $(realpath $0))/env.Variable
+
+mkdir -p  $STARout
+echo "`date +%Y%m%d-%H:%M:%S`: STAR"
+
+STARfq1=$2
+STARfq2=$3
+
+$STAR \
+    --runMode alignReads \
+    --runThreadN 10 \
+    --genomeDir $STAR_idx \
+    --sjdbGTFfile $STAR_gtf \
+    --genomeLoad NoSharedMemory \
+    --readFilesType Fastx \
+    --readFilesIn $STARfq1 $STARfq2 \
+    --readFilesCommand zcat \
+    --readQualityScoreBase 33 \
+    --limitIObufferSize 200000000 \
+    --limitBAMsortRAM 20000000000 \
+    --outSAMattributes All \
+    --outSAMattrRGline ID:${SID} LB:${SID} SM:${SID} PL:Illumina \
+    --outFileNamePrefix "${STARpre}." \
+    --outStd Log \
+    --outReadsUnmapped Fastx \
+    --outSAMtype BAM SortedByCoordinate \
+    --outSAMmode Full \
+    --outSAMunmapped Within \
+    --outBAMsortingThreadN 3 \
+    --outFilterMultimapNmax 10 \
+    --outFilterMismatchNmax 10 \
+    --outSAMattrIHstart 0 \
+    --outSAMstrandField intronMotif \
+    --outFilterIntronMotifs RemoveNoncanonical \
+    --alignSoftClipAtReferenceEnds Yes \
+    --quantMode TranscriptomeSAM GeneCounts \
+    --quantTranscriptomeBan IndelSoftclipSingleend \
+    --twopassMode Basic
